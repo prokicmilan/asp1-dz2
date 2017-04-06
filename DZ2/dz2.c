@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 //struktura binarnog stabla
 typedef struct bintree {
@@ -57,6 +58,7 @@ BinTree* peekQueue(Queue* head) {
 	return curr->info;
 }
 
+//ispis stabla
 void LevelOrder(BinTree* root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
@@ -71,6 +73,24 @@ void LevelOrder(BinTree* root) {
 	}
 }
 
+int getHeight(BinTree *root) {
+	Queue* order = NULL;
+	BinTree* node = NULL;
+	int numRead = 0;
+	
+	if (root != NULL) {
+		order = pushToQueue(order, root);
+		while ((node = popFromQueue(&order)) != NULL) {
+			printf("%s\n", node->info);
+			order = pushToQueue(order, node->left);
+			order = pushToQueue(order, node->right);
+			numRead++;
+		}
+	}
+	return floor(log10(numRead)/log10(2));
+}
+/* REKURZIVNO RESENJE:
+
 int getMax(int a, int b) {
 	return a > b ? a : b;
 }
@@ -81,6 +101,7 @@ int getHeight(BinTree* root) {
 	}
 	return 1 + getMax(getHeight(root->left), getHeight(root->right));
 }
+*/
 
 int main(void) {
 	Queue* queue = NULL;
