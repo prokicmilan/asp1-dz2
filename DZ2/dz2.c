@@ -96,7 +96,7 @@ int getHeight(BinTree *root) {
 	}
 	return (int)(floor(log10(numRead)/log10(2)));
 }
-/* REKURZIVNO RESENJE:
+/* REKURZIVNA VISINA STABLA:
 
 int getMax(int a, int b) {
 	return a > b ? a : b;
@@ -110,17 +110,49 @@ int getHeight(BinTree* root) {
 }
 */
 
+void playGame(BinTree* root) {
+	BinTree* next = NULL;
+	char answer[4];
+	char solution[255];
+
+	next = root;
+	while (1) {
+		printf("%s\n", next->info);
+		gets(answer);
+		if (strcmp(answer, "yes") == 0) {
+			if (next->left->left == NULL) {
+				strcpy(solution, next->left->info);
+				break;
+			}
+			next = next->left;
+		}
+		if (strcmp(answer, "no") == 0) { //nepotrebno ako se pretpostavi da ce odgovori uvek biti yes ili no
+			if (next->right->left == NULL) {
+				strcpy(solution, next->right->info);
+				break;
+			}
+			next = next->right;
+		}
+	}
+	printf("%s", solution);
+}
+
 int main(void) {
 	Queue* queue = NULL;
 	BinTree* root = NULL;
 	BinTree* current = NULL;
 	BinTree* newNode = NULL;
 	char info[256];
+	int again;
 
 	//scanf("%s", &info);
 	gets(info);
-	printf("%s\n", info);
 	while (strcmp(info, "-1") != 0) {
+		if (strcmp(info, "0") == 0) {
+			gets(info);
+			current = deleteFromQueue(&queue);
+			continue;
+		}
 		newNode = malloc(sizeof(BinTree));
 		newNode->left = NULL;
 		newNode->right = NULL;
@@ -142,10 +174,16 @@ int main(void) {
 			}
 		} //else
 		gets(info);
-		printf("%s\n", info);
 	} //while
 	LevelOrder(root);
-	printf("\n%d\n", getHeight(root));
-
+	//printf("\n%d\n", getHeight(root));
+	printf("\nGAME\n");
+	while (1) {
+		playGame(root);
+		scanf("%d", &again);
+		if (again == 0) {
+			break;
+		}
+	}
 	return 0;
 }
