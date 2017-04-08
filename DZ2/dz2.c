@@ -16,7 +16,7 @@ typedef struct queue {
 	struct queue* next;
 } Queue;
 
-Queue* pushToQueue(Queue* head, BinTree* ptr) {
+Queue* insertQueue(Queue* head, BinTree* ptr) {
 	Queue* newNode = malloc(sizeof(Queue));
 
 	newNode->info = ptr;
@@ -26,7 +26,7 @@ Queue* pushToQueue(Queue* head, BinTree* ptr) {
 	return head;
 }
 
-BinTree* popFromQueue(Queue** head) {
+BinTree* deleteFromQueue(Queue** head) {
 	Queue* curr = *head;
 	Queue* prev = NULL;
 	BinTree *old = NULL;
@@ -58,17 +58,21 @@ BinTree* peekQueue(Queue* head) {
 	return curr->info;
 }
 
-//ispis stabla
+//ispis stabla - obrisati
 void LevelOrder(BinTree* root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
 
-	if (root != NULL) {
-		order = pushToQueue(order, root);
-		while ((node = popFromQueue(&order)) != NULL) {
-			printf("%s\n", node->info);
-			order = pushToQueue(order, node->left);
-			order = pushToQueue(order, node->right);
+	node = root;
+	order = insertQueue(order, node);
+	while (order != NULL) {
+		node = deleteFromQueue(&order);
+		printf("%s\n", node->info);
+		if (node->left != NULL) {
+			order = insertQueue(order, node->left);
+		}
+		if (node->right != NULL) {
+			order = insertQueue(order, node->right);
 		}
 	}
 }
@@ -77,17 +81,20 @@ int getHeight(BinTree *root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
 	int numRead = 0;
-	
-	if (root != NULL) {
-		order = pushToQueue(order, root);
-		while ((node = popFromQueue(&order)) != NULL) {
-			printf("%s\n", node->info);
-			order = pushToQueue(order, node->left);
-			order = pushToQueue(order, node->right);
-			numRead++;
+
+	node = root;
+	order = insertQueue(order, root);
+	while (order != NULL) {
+		node = deleteFromQueue(&order);
+		numRead++;
+		if (node->left != NULL) {
+			order = insertQueue(order, node->left);
+		}
+		if (node->right != NULL) {
+			order = insertQueue(order, node->right);
 		}
 	}
-	return floor(log10(numRead)/log10(2));
+	return (int)(floor(log10(numRead)/log10(2)));
 }
 /* REKURZIVNO RESENJE:
 
@@ -110,7 +117,9 @@ int main(void) {
 	BinTree* newNode = NULL;
 	char info[256];
 
-	scanf("%s", &info);
+	//scanf("%s", &info);
+	gets(info);
+	printf("%s\n", info);
 	while (strcmp(info, "-1") != 0) {
 		newNode = malloc(sizeof(BinTree));
 		newNode->left = NULL;
@@ -118,7 +127,7 @@ int main(void) {
 		strcpy(newNode->info, info);
 		if (root == NULL) {
 			root = newNode;
-			queue = pushToQueue(queue, root);
+			queue = insertQueue(queue, root);
 		} //if
 		else {
 			current = peekQueue(queue);
@@ -127,12 +136,13 @@ int main(void) {
 			}
 			else {
 				current->right = newNode;
-				current = popFromQueue(&queue);
-				queue = pushToQueue(queue, current->left);
-				queue = pushToQueue(queue, current->right);
+				current = deleteFromQueue(&queue);
+				queue = insertQueue(queue, current->left);
+				queue = insertQueue(queue, current->right);
 			}
 		} //else
-		scanf("%s", &info);
+		gets(info);
+		printf("%s\n", info);
 	} //while
 	LevelOrder(root);
 	printf("\n%d\n", getHeight(root));
