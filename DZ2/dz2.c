@@ -112,8 +112,12 @@ int getHeight(BinTree* root) {
 
 void playGame(BinTree* root) {
 	BinTree* next = NULL;
+	BinTree* sol = NULL;
+	BinTree* newNode = NULL;
 	char answer[4];
-	char solution[255];
+	char solAnswer[4];
+	char solution[25];
+	char question[255];
 
 	next = root;
 	while (1) {
@@ -122,6 +126,7 @@ void playGame(BinTree* root) {
 		if (strcmp(answer, "yes") == 0) {
 			if (next->left->left == NULL) {
 				strcpy(solution, next->left->info);
+				sol = next->left;
 				break;
 			}
 			next = next->left;
@@ -129,12 +134,38 @@ void playGame(BinTree* root) {
 		if (strcmp(answer, "no") == 0) { //nepotrebno ako se pretpostavi da ce odgovori uvek biti yes ili no
 			if (next->right->left == NULL) {
 				strcpy(solution, next->right->info);
+				sol = next->right;
 				break;
 			}
 			next = next->right;
 		}
 	}
-	printf("%s", solution);
+ 	printf("%s\n", solution);
+	printf("Da li je odgovor tacan?");
+	gets(solAnswer);
+	if (strcmp(solAnswer, "no") == 0) {
+		printf("Unesite tacan odgovor: ");
+		gets(solution);
+		printf("Unesite pitanje kojim mogu da razlikujem pojam %s od pojma %s:\n", solution, sol->info);
+		gets(question);
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, question);
+		if (strcmp(answer, "yes") == 0) {
+			next->left = newNode;
+		}
+		else {
+			next->right = newNode;
+		}
+		next = newNode;
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, solution);
+		next->left = newNode;
+		next->right = sol;
+	}
 }
 
 int main(void) {
@@ -181,6 +212,7 @@ int main(void) {
 	while (1) {
 		playGame(root);
 		scanf("%d", &again);
+		getchar();
 		if (again == 0) {
 			break;
 		}
