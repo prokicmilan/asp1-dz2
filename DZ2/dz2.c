@@ -31,19 +31,21 @@ BinTree* deleteFromQueue(Queue** head) {
 	Queue* prev = NULL;
 	BinTree *old = NULL;
 	
-	prev = curr;
-	while (curr->next != NULL) {
+	if (*head != NULL) {
 		prev = curr;
-		curr = curr->next;
-	}
+		while (curr->next != NULL) {
+			prev = curr;
+			curr = curr->next;
+		}
 
-	old = curr->info;
-	if (curr == *head) {
-		*head = NULL;
+		old = curr->info;
+		if (curr == *head) {
+			*head = NULL;
+		}
+		prev->next = NULL;
+		free(curr);
+		curr = NULL;
 	}
-	prev->next = NULL;
-	free(curr);
-	curr = NULL;
 
 	return old;
 }
@@ -172,7 +174,7 @@ void playGame(BinTree* root) {
 			}
 			next = next->left;
 		}
-		if (strcmp(answer, "no") == 0) { //nepotrebno ako se pretpostavi da ce odgovori uvek biti yes ili no, pruza zastitu od nepostojecih odgovora
+		else if (strcmp(answer, "no") == 0) {
 			if (next->right->left == NULL) {
 				strcpy(solution, next->right->info);
 				sol = next->right;
@@ -209,28 +211,39 @@ void playGame(BinTree* root) {
 	}
 }
 
-//ne radi kako treba
 int getHeight(BinTree *root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
-	int numRead = 0;
+	int height = 0;
+	int toPopOld = 0;
+	int toPopNew = 0;
 
 	if (root == NULL) {
 		return 0;
 	}
-	node = root;
 	order = insertQueue(order, root);
-	while (order != NULL) {
-		node = deleteFromQueue(&order);
-		numRead++;
-		if (node->left != NULL) {
-			order = insertQueue(order, node->left);
+	toPopNew = 1;
+	while (1) {
+		if (order == NULL) {
+			return --height;
 		}
-		if (node->right != NULL) {
-			order = insertQueue(order, node->right);
+		height++;
+		toPopOld = toPopNew;
+		toPopNew = 0;
+		while (toPopOld > 0) {
+			node = deleteFromQueue(&order);
+			if (node->left != NULL) {
+				order = insertQueue(order, node->left);
+				toPopNew++;
+			}
+			if (node->right != NULL) {
+				order = insertQueue(order, node->right);
+				toPopNew++;
+			}
+			toPopOld--;
 		}
 	}
-	return (int)(floor(log10(numRead)/log10(2)));
+	return 0;
 }
 /* REKURZIVNA VISINA STABLA:
 
