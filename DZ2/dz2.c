@@ -118,15 +118,12 @@ BinTree* formTree() {
 	return root;
 }
 
-BinTree* deleteBase(BinTree* root) {
+void deleteBase(BinTree** root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
 	BinTree* old = NULL;
-	if (root == NULL) {
-		return NULL;
-	}
-	else {
-		node = root;
+	if (*root != NULL) {
+		node = *root;
 		order = insertQueue(order, node);
 		while (order != NULL) {
 			node = deleteFromQueue(&order);
@@ -139,7 +136,7 @@ BinTree* deleteBase(BinTree* root) {
 			free(node);
 		}
 	}
-	return NULL;
+	*root = NULL;
 }
 
 void printMenu() {
@@ -152,7 +149,8 @@ void printMenu() {
 
 
 //TODO: ako je baza prazna, odmah predji na unos pojma
-void playGame(BinTree** root) {
+//TODO: ako se ode na nepoznatu kategoriju, program puca
+void playGame(BinTree* root) {
 	BinTree* next = NULL;
 	BinTree* sol = NULL;
 	BinTree* newNode = NULL;
@@ -161,7 +159,8 @@ void playGame(BinTree** root) {
 	char solution[25];
 	char question[255];
 
-	next = *root;
+	printf("Moguci odgovori su \"yes\" i \"no\"\n");
+	next = root;
 	while (1) {
 		printf("%s\n", next->info);
 		gets(answer);
@@ -251,7 +250,6 @@ int main(void) {
 	BinTree* knowledgeBase = NULL;
 	int menuChoice;
 	int cont = 1;
-	int baseChoice;
 	
 	while (cont) {
 		printMenu();
@@ -259,14 +257,14 @@ int main(void) {
 		getchar();
 		switch (menuChoice) {
 			case 1:
+				deleteBase(&knowledgeBase);
 				knowledgeBase = formTree();
 				break;
 			case 2:
-				knowledgeBase = deleteBase(knowledgeBase);
+				deleteBase(&knowledgeBase);
 				break;
 			case 3:
-				printf("Moguci odgovori su \"yes\" i \"no\"\n");
-				playGame(&knowledgeBase);
+				playGame(knowledgeBase);
 				break;
 			case 4:
 				printf("Visina baze je %d\n", getHeight(knowledgeBase));
