@@ -86,10 +86,10 @@ BinTree* formTree() {
 	Queue* queue = NULL;
 	char info[255];
 
-	printf("\n\"NULL\" za nepostojeci cvor, \"end\" za kraj unosa\n");
+	printf("\n\"null\" ako je otac list, \"skip\" ako cvor ne postoji, \"end\" za kraj unosa\n");
 	gets(info);
 	while (strcmp(info, "end") != 0) {
-		if ((strcmp(info, "null") == 0 || strcmp(info, "NULL") == 0) && queue != NULL) {
+		if (strcmp(info, "null") == 0 && queue != NULL) {
 			gets(info);
 			current = deleteFromQueue(&queue);
 			continue;
@@ -98,22 +98,40 @@ BinTree* formTree() {
 		newNode->left = NULL;
 		newNode->right = NULL;
 		strcpy(newNode->info, info);
-		if (root == NULL) {
+		if (root == NULL && strcmp(info, "skip") != 0) {
 			root = newNode;
 			queue = insertQueue(queue, root);
 		} //if
 		else {
 			current = peekQueue(queue);
 			if (current->left == NULL) {
-				current->left = newNode;
+				if (strcmp(info, "skip") != 0) {
+					current->left = newNode;
+				}
+				else {
+					free(newNode);
+					gets(info);
+					newNode = malloc(sizeof(BinTree));
+					newNode->left = NULL;
+					newNode->right = NULL;
+					strcpy(newNode->info, info);
+					current->right = newNode;
+					current = deleteFromQueue(&queue);
+					queue = insertQueue(queue, current->right);
+				}
 			}
+			else if (strcmp(info, "skip") != 0) {
+					current->right = newNode;
+					current = deleteFromQueue(&queue);
+					queue = insertQueue(queue, current->left);
+					queue = insertQueue(queue, current->right);
+				}
 			else {
-				current->right = newNode;
+				free(newNode);
 				current = deleteFromQueue(&queue);
 				queue = insertQueue(queue, current->left);
-				queue = insertQueue(queue, current->right);
 			}
-		} //else
+		}
 		gets(info);
 	} //while
 
@@ -272,6 +290,7 @@ int main(void) {
 			case 1:
 				deleteBase(&knowledgeBase);
 				knowledgeBase = formTree();
+				LevelOrder(knowledgeBase);
 				break;
 			case 2:
 				deleteBase(&knowledgeBase);
