@@ -100,7 +100,7 @@ void deleteBase(BinTree** root) {
 	*root = NULL;
 }
 
-BinTree* formTree(BinTree* root, char* category) {
+BinTree* formTree(BinTree* root) {
 	BinTree* current = NULL;
 	BinTree* newNode = NULL;
 	BinTree* defaultNode = NULL;
@@ -310,7 +310,7 @@ int main(void) {
 					printf("Nepostojeca kategorija\n");
 					break;
 				}
-				knowledgeBase[catChoice - 1] = formTree(knowledgeBase[catChoice - 1], categories[catChoice - 1]);
+				knowledgeBase[catChoice - 1] = formTree(knowledgeBase[catChoice - 1]);
 				LevelOrder(knowledgeBase[catChoice - 1]);
 				break;
 			case 2:
