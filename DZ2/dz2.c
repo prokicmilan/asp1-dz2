@@ -1,5 +1,3 @@
-//TODO: Suma stabala (po jedno za svaku kategoriju)
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,65 +79,6 @@ void LevelOrder(BinTree* root) {
 	}
 }
 
-BinTree* formTree() {
-	BinTree* root = NULL;
-	BinTree* current = NULL;
-	BinTree* newNode = NULL;
-	Queue* queue = NULL;
-	char info[255];
-
-	printf("\n\"null\" ako je otac list, \"skip\" ako cvor ne postoji, \"end\" za kraj unosa\n");
-	gets(info);
-	while (strcmp(info, "end") != 0) {
-		if (strcmp(info, "null") == 0 && queue != NULL) {
-			gets(info);
-			current = deleteFromQueue(&queue);
-			continue;
-		}
-		newNode = malloc(sizeof(BinTree));
-		newNode->left = NULL;
-		newNode->right = NULL;
-		strcpy(newNode->info, info);
-		if (root == NULL && strcmp(info, "skip") != 0) {
-			root = newNode;
-			queue = insertQueue(queue, root);
-		} //if
-		else {
-			current = peekQueue(queue);
-			if (current->left == NULL) {
-				if (strcmp(info, "skip") != 0) {
-					current->left = newNode;
-				}
-				else {
-					free(newNode);
-					gets(info);
-					newNode = malloc(sizeof(BinTree));
-					newNode->left = NULL;
-					newNode->right = NULL;
-					strcpy(newNode->info, info);
-					current->right = newNode;
-					current = deleteFromQueue(&queue);
-					queue = insertQueue(queue, current->right);
-				}
-			}
-			else if (strcmp(info, "skip") != 0) {
-					current->right = newNode;
-					current = deleteFromQueue(&queue);
-					queue = insertQueue(queue, current->left);
-					queue = insertQueue(queue, current->right);
-				}
-			else {
-				free(newNode);
-				current = deleteFromQueue(&queue);
-				queue = insertQueue(queue, current->left);
-			}
-		}
-		gets(info);
-	} //while
-
-	return root;
-}
-
 void deleteBase(BinTree** root) {
 	Queue* order = NULL;
 	BinTree* node = NULL;
@@ -161,6 +100,49 @@ void deleteBase(BinTree** root) {
 	*root = NULL;
 }
 
+BinTree* formTree(BinTree* root, char* category) {
+	BinTree* current = NULL;
+	BinTree* newNode = NULL;
+	BinTree* defaultNode = NULL;
+	Queue* queue = NULL;
+	char info[255];
+	int catChoice;
+
+	deleteBase(&root);
+	printf("\n\"null\" ako je otac list, \"end\" za kraj unosa\n");
+	gets(info);
+	while (strcmp(info, "end") != 0) {
+		if (strcmp(info, "null") == 0 && queue != NULL) {
+			gets(info);
+			current = deleteFromQueue(&queue);
+			current->left = current->right = NULL;
+			continue;
+		}
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = newNode->right = NULL;
+		strcpy(newNode->info, info);
+		if (root == NULL) {
+			root = newNode;
+			queue = insertQueue(queue, root);
+		}
+		else {
+			current = peekQueue(queue);
+			if (current->left == NULL) {
+				current->left = newNode;
+			}
+			else {
+					current->right = newNode;
+					current = deleteFromQueue(&queue);
+					queue = insertQueue(queue, current->left);
+					queue = insertQueue(queue, current->right);
+			}
+		}
+		gets(info);
+	} //while
+
+	return root;
+}
+
 void printMenu() {
 	printf("1. Formiranje baze znanja.\n");
 	printf("2. Brisanje baze znanja\n");
@@ -169,25 +151,37 @@ void printMenu() {
 	printf("0. Kraj\n");
 }
 
-
-void playGame(BinTree** root) {
+void playGame(BinTree** root, char* category) {
 	BinTree* next = NULL;
+	BinTree* parent = NULL;
 	BinTree* sol = NULL;
 	BinTree* newNode = NULL;
 	char answer[4];
 	char solAnswer[4];
-	char solution[25] = "Nepoznata kategorija\n";
+	char solution[25];
 	char question[255];
 
 	if (*root == NULL) {
 		printf("Baza znanja je prazna\n");
-		printf("Unesite koreno pitanje:\n");
+		printf("Unesite zamisljen pojam:\n");
+		gets(solution);
+		printf("Unesite pitanje koje vodi do pojma:\n");
 		gets(question);
 		newNode = malloc(sizeof(BinTree));
 		newNode->left = NULL;
 		newNode->right = NULL;
 		strcpy(newNode->info, question);
 		*root = newNode;
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, category);
+		(*root)->right = newNode;
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, solution);
+		(*root)->left = newNode;
 		return;
 	}
 	printf("Moguci odgovori su \"yes\" i \"no\"\n");
@@ -195,53 +189,53 @@ void playGame(BinTree** root) {
 	while (next != NULL) {
 		printf("%s\n", next->info);
 		gets(answer);
+		parent = next;
 		if (strcmp(answer, "yes") == 0) {
-			if (next->left != NULL && next->left->left == NULL && next->left->right == NULL) {
-				strcpy(solution, next->left->info);
-				sol = next->left;
-				break;
+			if (next->left != NULL) {
+				next = next->left;
 			}
-			next = next->left;
+			if (next->left == NULL && next->right == NULL) {
+				strcpy(solution, next->info);
+				sol = next;
+				next = NULL;
+			}
 		}
 		else if (strcmp(answer, "no") == 0) {
-			if (next->right != NULL && next->right->right == NULL && next->right->left == NULL) {
-				strcpy(solution, next->right->info);
-				sol = next->right;
-				break;
+			if (next->right != NULL) {
+				next = next->right;
 			}
-			next = next->right;
+			if (next->left == NULL && next->right == NULL) {
+				strcpy(solution, next->info);
+				sol = next;
+				next = NULL;
+			}
 		}
 	}
-	if (strcmp(solution, "Nepoznata kategorija\n") != 0) {
-		printf("%s\n", solution);
-		printf("Da li je odgovor tacan?");
-		gets(solAnswer);
-		if (strcmp(solAnswer, "no") == 0) {
-			printf("Unesite odgovor: ");
-			gets(solution);
-			printf("Unesite pitanje kojim mogu da razlikujem pojam %s od pojma %s:\n", solution, sol->info);
-			gets(question);
-			newNode = malloc(sizeof(BinTree));
-			newNode->left = NULL;
-			newNode->right = NULL;
-			strcpy(newNode->info, question);
-			if (strcmp(answer, "yes") == 0) {
-				next->left = newNode;
-			}
-			else {
-				next->right = newNode;
-			}
-			next = newNode;
-			newNode = malloc(sizeof(BinTree));
-			newNode->left = NULL;
-			newNode->right = NULL;
-			strcpy(newNode->info, solution);
-			next->left = newNode;
-			next->right = sol;
+	printf("%s\n", solution);
+	printf("Da li je odgovor tacan?");
+	gets(solAnswer);
+	if (strcmp(solAnswer, "no") == 0) {
+		printf("Unesite odgovor: ");
+		gets(solution);
+		printf("Unesite pitanje kojim mogu da razlikujem pojam %s od pojma %s:\n", solution, sol->info);
+		gets(question);
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, question);
+		if (strcmp(answer, "yes") == 0) {
+			parent->left = newNode;
 		}
-	}
-	else {
-		printf("%s", solution);
+		else {
+			parent->right = newNode;
+		}
+		parent = newNode;
+		newNode = malloc(sizeof(BinTree));
+		newNode->left = NULL;
+		newNode->right = NULL;
+		strcpy(newNode->info, solution);
+		parent->left = newNode;
+		parent->right = sol;
 	}
 }
 
@@ -294,9 +288,14 @@ int getHeight(BinTree* root) {
 */
 
 int main(void) {
-	BinTree* knowledgeBase = NULL;
+	BinTree* zivotinje = NULL;
+	BinTree* predmeti = NULL;
+	BinTree* biljke = NULL;
+	BinTree* knowledgeBase[3] = { NULL, NULL, NULL };
 	int menuChoice;
+	int catChoice;
 	int cont = 1;
+	char* categories[3] = { "zivotinja", "predmet", "biljka" };
 	
 	while (cont) {
 		printMenu();
@@ -304,18 +303,43 @@ int main(void) {
 		getchar();
 		switch (menuChoice) {
 			case 1:
-				deleteBase(&knowledgeBase);
-				knowledgeBase = formTree();
-				LevelOrder(knowledgeBase);
+				printf("Kategorije su: \n1. Zivotinje\n2. Predmeti\n3. Biljke\nOdaberite zeljenu kategoriju: ");
+				scanf("%d", &catChoice);
+				getchar();
+				if (catChoice < 0 || catChoice >= 4) {
+					printf("Nepostojeca kategorija\n");
+					break;
+				}
+				knowledgeBase[catChoice - 1] = formTree(knowledgeBase[catChoice - 1], categories[catChoice - 1]);
+				LevelOrder(knowledgeBase[catChoice - 1]);
 				break;
 			case 2:
-				deleteBase(&knowledgeBase);
+				printf("Kategorije su: \n1. Zivotinje\n2. Predmeti\n3. Biljke\nOdaberite zeljenu kategoriju: ");
+				scanf("%d", &catChoice);
+				if (catChoice < 0 || catChoice >= 4) {
+					printf("Nepostojeca kategorija\n");
+					break;
+				}
+				deleteBase(&knowledgeBase[catChoice - 1]);
 				break;
 			case 3:
-				playGame(&knowledgeBase);
+				printf("Kategorije su: \n1. Zivotinje\n2. Predmeti\n3. Biljke\nOdaberite zeljenu kategoriju: ");
+				scanf("%d", &catChoice);
+				getchar();
+				if (catChoice < 0 || catChoice >= 4) {
+					printf("Nepostojeca kategorija\n");
+					break;
+				}
+				playGame(&knowledgeBase[catChoice - 1], categories[catChoice - 1]);
 				break;
 			case 4:
-				printf("Visina baze je %d\n", getHeight(knowledgeBase));
+				printf("Kategorije su: \n1. Zivotinje\n2. Predmeti\n3. Biljke\nOdaberite zeljenu kategoriju:\n");
+				scanf("%d", &catChoice);
+				if (catChoice < 0 || catChoice >= 4) {
+					printf("Nepostojeca kategorija\n");
+					break;
+				}
+				printf("Visina baze %s je %d\n",categories[catChoice - 1], getHeight(knowledgeBase[catChoice - 1]));
 				break;
 			case 0:
 				cont = 0;
